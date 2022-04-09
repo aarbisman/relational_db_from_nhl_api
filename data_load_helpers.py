@@ -181,3 +181,82 @@ def get_gameEvent_insert(event_row, game_id):
     .format(event_id, event_type, event_period, event_peroid_time, event_dateTime)
     
     return insert_statement
+
+def identify_players(event_row, game_dat, main_attr, second_attr):
+    
+    teams = [game_dat['teams']['away']['id'], game_dat['teams']['home']['id']]
+    players = event_row['players']
+    
+    main_player = None
+    secondary_player = None
+    main_team = None
+    secondary_team = None
+    
+    for player in players:
+        
+        if player['playerType'] == main_attr:
+            main_player = player['player']['id']
+            main_team = event_row['team']['id']
+            
+        if player['playerType'] == second_attr:
+            secondary_player = player['player']['id']
+            secondary_team = [team for team in teams if team != event_row['team']['id']][0]
+            
+    
+    return main_player, main_team, secondary_player, secondary_team
+
+
+def get_playerPlay_insert(event_row, game_dat):
+    
+    eventId = int(str(event_row['about']['eventIdx']) + str(game_dat['game']['pk']))
+    eventType = event_row['result']['event']
+    
+    ## Initialize all of these values as null, and fill them in depending on the event type
+    hitter = None
+    hitterTeam = None
+    hitee = None
+    hiteeTeam = None
+    foWinner = None
+    foWinnerTeam = None
+    foLoser = None
+    foLoserTeam = None
+    giveawayPlayer = None
+    giveawayTeam = None
+    takeawayPlayer = None
+    takeawayTeam = None
+    
+    
+    x = event_row['coordinates']['x']
+    y = event_row['coordinates']['y']
+    
+    if eventType == 'Hit':
+        
+        hitter, hitterTeam, hitee, hiteeTeam = identify_players(event_row, game_dat, 'Hitter', 'Hittee')
+    
+    elif eventType == 'Faceoff':
+
+        foWinner, foWinnerTeam, foLoser, foLoserTeam = identify_players(event_row, game_dat, 'Winner', 'Loser')
+    
+    
+    elif eventType == 'Giveaway':
+
+        giveawayPlayer = event_row['players'][0]['player']['id']
+        giveawayTeam = event_row['team']['id']
+    
+    
+    elif eventType == 'Takeaway':
+        takeawayPlayer = event_row['players'][0]['player']['id']
+        takeawayTeam = event_row['team']['id']
+        
+    else:
+        print('not an expected event')
+        
+    insert_statement = """INSERT IGNORE INTO playerPlay(eventId, eventType, hitter, hitterTeam, hitee, hiteeTeam,
+    foWinner, foWinnerTeam, foLoser, foLoserTeam, giveawayPlayer, giveawayTeam, takeawayPlayer, takeawayTeam)\
+    VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})"""\
+    .format(eventId, eventType, hitter, hitterTeam, hitee, hiteeTeam, foWinner, foWinnerTeam,
+            foLoser, foLoserTeam, giveawayPlayer, giveawayTeam, takeawayPlayer, takeawayTeam)
+    
+    return insert_statement
+
+    
