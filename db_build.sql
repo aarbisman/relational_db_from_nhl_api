@@ -109,15 +109,9 @@ CREATE TABLE gameEvent(
 	FOREIGN KEY (gameId) REFERENCES game(id)
 );
 
-CREATE TABLE playerPlayType(
-	id int NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE playerPlay(
 	event_id int NOT NULL,
-    playType int NOT NULL,
+    playType varchar(25) NOT NULL,
     hitter int,
 	hitterTeam int,
     hitee int,
@@ -134,7 +128,6 @@ CREATE TABLE playerPlay(
 	y float,	
     PRIMARY KEY (event_id),
 	FOREIGN KEY (event_id) REFERENCES gameEvent(id),
-	FOREIGN KEY (playType) REFERENCES playerPlayType(id),
 	FOREIGN KEY (hitter) REFERENCES player(id),
 	FOREIGN KEY (hitee) REFERENCES player(id),
 	FOREIGN KEY (foWinner) REFERENCES player(id),
@@ -149,35 +142,26 @@ CREATE TABLE playerPlay(
 	FOREIGN KEY (takeawayTeam) REFERENCES team(id)
 );
 
-CREATE TABLE shotOutcome(
-	id int NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE shotType(
-	id int NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (id)
-);
-
 CREATE TABLE playerShot(
 	event_id int NOT NULL,
-    shotType int NOT NULL,
-	shotOutcome int NOT NULL,
+    shotOutcome varchar(25) NOT NULL,
+    shotType varchar(25),
     shooter int,
 	shooterTeam int,
+    assistPlayer1 int,
+    assistPlayer2 int,
     goalie int,
 	goalieTeam int,	
     blocker int,
-	blockerTeam int,		
+	blockerTeam int,
+    missType varchar(40),		
 	x float,
 	y float,	
     PRIMARY KEY (event_id),
 	FOREIGN KEY (event_id) REFERENCES gameEvent(id),
-	FOREIGN KEY (shotType) REFERENCES shotType(id),
-	FOREIGN KEY (shotOutcome) REFERENCES shotOutcome(id),
 	FOREIGN KEY (shooter) REFERENCES player(id),
+    FOREIGN KEY (assistPlayer1) REFERENCES player(id),
+    FOREIGN KEY (assistPlayer2) REFERENCES player(id),
 	FOREIGN KEY (goalie) REFERENCES player(id),
 	FOREIGN KEY (blocker) REFERENCES player(id),
 	FOREIGN KEY (shooterTeam) REFERENCES team(id),
@@ -185,25 +169,11 @@ CREATE TABLE playerShot(
 	FOREIGN KEY (blockerTeam) REFERENCES team(id)
 );
 
-CREATE TABLE penaltyType(
-	id int NOT NULL,
-    description varchar(25) NOT NULL,
-    PRIMARY KEY (id)
-);
-
-CREATE TABLE severity(
-	id int NOT NULL,
-    description varchar(25) NOT NULL,
-	penaltyMin int,
-    PRIMARY KEY (id)
-);
-
--- works up until here
-
 CREATE TABLE penalty(
 	event_id int NOT NULL,
-    penaltyType int NOT NULL,
-	severity int NOT NULL,
+    penaltyType varchar(25) NOT NULL,
+	severity varchar(25) NOT NULL,
+    penaltyMin int NOT NULL,
     penaltyOnId int,
 	penaltyOnTeam int,
     drewById int,
@@ -212,8 +182,6 @@ CREATE TABLE penalty(
 	y float,	
     PRIMARY KEY (event_id),
 	FOREIGN KEY (event_id) REFERENCES gameEvent(id),
-	FOREIGN KEY (penaltyType) REFERENCES penaltyType(id),
-	FOREIGN KEY (severity) REFERENCES severity(id),
 	FOREIGN KEY (penaltyOnId) REFERENCES player(id),
 	FOREIGN KEY (drewById) REFERENCES player(id),
 	FOREIGN KEY (penaltyOnTeam) REFERENCES team(id),

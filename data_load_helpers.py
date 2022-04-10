@@ -259,4 +259,68 @@ def get_playerPlay_insert(event_row, game_dat):
     
     return insert_statement
 
+
+def get_playerShot_insert(event_row, game_dat):
+    
+    eventId = int(str(event_row['about']['eventIdx']) + str(game_dat['game']['pk']))
+    shotOutcome = event_row['result']['event']
+    
+    ## Initialize all of these values as null, and fill them in depending on the event type
+    shotType = None
+    shooter = None
+    shooterTeam = None
+    assistPlayer1 = None
+    assistPlayer2 = None
+    goalie = None
+    goalieTeam = None
+    blocker = None
+    blockerTeam = None
+    missType = None
+    
+    
+    if shotOutcome == 'Shot':
+        
+        shooter, shooterTeam, goalie, goalieTeam = identify_players(event_row, game_dat,'Shooter', 'Goalie')
+        shotType = event_row['result']['secondaryType']
+    
+    elif shotOutcome == 'Blocked Shot':
+        
+        shooter, shooterTeam, blocker, blockerTeam = identify_players(event_row, game_dat,'Shooter', 'Blocker')
+    
+    elif shotOutcome == 'Missed Shot':
+        
+        shooter = event_row['players'][0]['player']['id']
+        shooterTeam = event_row['team']['id']
+        missType = event_row['result']['description'].split(' - ')[1]
+    
+    elif shotOutcome == 'Goal':
+        
+        ## Get the shooter and goalie
+        shooter, shooterTeam, goalie, goalieTeam = identify_players(event_row, game_dat,'Scorer', 'Goalie')
+        shotType = event_row['result']['secondaryType']
+        
+        ## Get the assists (between 0-2 assists per goal)
+        assists = [player['player']['id'] for player in event_row['players'] if player['playerType'] == 'Assist']
+        if len(assists) == 1:
+            assistPlayer1 = assists[0]
+            
+        elif len(assists) == 2:
+            assistPlayer1 = assists[0]
+            assistPlayer2 = assists[1]
+
+    
+    x = event_row['coordinates']['x']
+    y = event_row['coordinates']['y']
+    
+    
+    
+    insert_statement = """INSERT IGNORE INTO playerShot(eventId, shotOutcome, shotType, shooter, shooterTeam, assistPlayer1,
+    assistPlayer2, goalie, goalieTeam, blocker, blockerTeam, missType, x, y)\
+    VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})"""\
+    .format(eventId, shotOutcome, shotType, shooter, shooterTeam, assistPlayer1, assistPlayer2,
+            goalie, goalieTeam, blocker, blockerTeam, x, y)
+    
+    
+    return insert_statement
+
     
