@@ -323,4 +323,48 @@ def get_playerShot_insert(event_row, game_dat):
     
     return insert_statement
 
+def get_penalty_insert(event_row, game_dat):
     
+    event_id = None
+    penaltyType = None
+    severity = None
+    penaltyMin = None
+    penaltyOn = None
+    penaltyOnTeam = None
+    drewBy = None
+    drewByTeam = None
+    servedBy = None
+    x = None
+    y = None
+    
+    
+    eventId = int(str(event_row['about']['eventIdx']) + str(game_dat['game']['pk']))
+    
+    penaltyType = event_row['result']['secondaryType']
+    severity = event_row['result']['penaltySeverity']
+    penaltyMin = event_row['result']['penaltyMinutes']
+
+    
+    if severity != 'Bench Minor':
+        
+        penaltyOn, penaltyOnTeam, drewBy, drewByTeam = identify_players(sample_penalty_2, game_dat_example, 'PenaltyOn', 'DrewBy')
+
+    elif severity == 'Bench Minor':
+        
+        servedBy = event_row['players'][0]['player']['id']
+        penaltyOnTeam = event_row['team']['id']
+    
+    
+    x = event_row['coordinates']['x']
+    y = event_row['coordinates']['y']
+    
+    
+    
+    insert_statement = """INSERT IGNORE INTO penalty(event_id, penaltyType, severity, penaltyMin, penaltyOn,\
+    penaltyOnTeam, drewBy, drewByTeam, servedBy, x, y)\
+    VALUES ({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})"""\
+    .format(event_id, penaltyType, severity, penaltyMin, penaltyOn, penaltyOnTeam, drewBy, drewByTeam, servedBy, x, y)
+    
+    
+    return insert_statement
+
