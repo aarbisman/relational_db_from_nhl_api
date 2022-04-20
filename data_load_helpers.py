@@ -354,9 +354,9 @@ def get_penalty_insert(event_row, game_dat):
         servedBy = event_row['players'][0]['player']['id']
         penaltyOnTeam = event_row['team']['id']
     
-    
-    x = event_row['coordinates']['x']
-    y = event_row['coordinates']['y']
+    if event_row['coordinates']:
+        x = event_row['coordinates']['x']
+        y = event_row['coordinates']['y']
     
     
     
@@ -367,4 +367,3 @@ def get_penalty_insert(event_row, game_dat):
     
     
     return insert_statement
-
